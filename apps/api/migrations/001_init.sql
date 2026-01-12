@@ -1,0 +1,30 @@
+CREATE TABLE IF NOT EXISTS releases (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  artist_name TEXT NOT NULL,
+  genre TEXT,
+  language TEXT,
+  explicit INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'DRAFT',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS tracks (
+  id TEXT PRIMARY KEY,
+  release_id TEXT NOT NULL REFERENCES releases(id) ON DELETE CASCADE,
+  track_number INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  explicit INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS tracks_release_track_number ON tracks(release_id, track_number);
+
+CREATE TABLE IF NOT EXISTS jobs (
+  id TEXT PRIMARY KEY,
+  release_id TEXT NOT NULL REFERENCES releases(id) ON DELETE CASCADE,
+  job_type TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'PENDING',
+  result_json TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

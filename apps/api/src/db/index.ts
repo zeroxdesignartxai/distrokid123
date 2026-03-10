@@ -1,8 +1,11 @@
 import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const connections = new Map<string, Database.Database>();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const defaultDbPath = () => {
   const root = process.cwd();
@@ -22,12 +25,22 @@ export const getDb = () => {
   return db;
 };
 
+export const closeDb = (dbPath?: string) => {
+  const key = dbPath ?? (process.env.DB_PATH ?? defaultDbPath());
+  const db = connections.get(key);
+  if (db) {
+    db.close();
+    connections.delete(key);
+  }
+};
+
 export const runMigrations = (db: Database.Database) => {
   db.exec(
     "CREATE TABLE IF NOT EXISTS migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, run_at TEXT DEFAULT CURRENT_TIMESTAMP)"
   );
 
-  const migrationsDir = path.join(process.cwd(), "apps", "api", "migrations");
+  // Resolve relative to this file so the path is correct regardless of cwd
+  const migrationsDir = path.resolve(__dirname, "../../migrations");
   const migrationFiles = fs
     .readdirSync(migrationsDir)
     .filter((file) => file.endsWith(".sql"))

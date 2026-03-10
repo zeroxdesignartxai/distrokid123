@@ -3,6 +3,7 @@ import request from "supertest";
 import fs from "node:fs";
 import path from "node:path";
 import { buildServer } from "../src/server";
+import { closeDb } from "../src/db";
 
 const dbPath = path.join(process.cwd(), "data", "test.sqlite");
 
@@ -19,6 +20,7 @@ describe("release API", () => {
   });
 
   afterEach(() => {
+    closeDb(dbPath);
     removeDb();
   });
 
